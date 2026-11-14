@@ -1,0 +1,10 @@
+# Render Blueprint — BoiBanai PDF Server (Free tier, কার্ড লাগে না)
+# ডেপ্লয়: Render Dashboard → New → Blueprint → এই রিপো/ফোল্ডারটি দেওয়া।
+services:
+  - type: web
+    name: boibanai-pdf
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health

@@ -1,0 +1,1 @@
+{"dependencies":{"express":"^4.19.2","puppeteer":"^22.15.0"},"description":"BoiBanai সরাসরি PDF ডাউনলোডের সার্ভার — আসল Chrome দিয়ে A5 PDF","engines":{"node":">=20"},"main":"server.js","name":"boibanai-pdf-server","scripts":{"start":"node server.js"},"version":"1.0.0"}
