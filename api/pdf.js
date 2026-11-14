@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
     }
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeName)}"`);
-    res.send(pdf);
+    res.send(Buffer.from(pdf));
   } catch (e) {
     console.error('PDF ভুল:', e && e.message);
     res.status(500).json({ error: 'PDF বানানো যায়নি' });
