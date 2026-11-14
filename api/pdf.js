@@ -5,10 +5,11 @@
  * Vercel-এর নিজের নির্দেশিত পথ: puppeteer-core + @sparticuz/chromium।
  * সীমা (Hobby, Fluid compute): সময় ৩০০ সেকেন্ড পর্যন্ত, মেমরি ২GB,
  * request/response body ৪.৫MB — তাই বড় ছবি অ্যাপ আগেই ছোট করে পাঠায়।
+ *
+ * NOTE: @sparticuz/chromium v153 is ESM-only — require() throws
+ * ERR_REQUIRE_ESM on Vercel's Node runtime, so both deps are loaded with
+ * dynamic import() inside the handler (the GET health check returns first).
  */
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
-
 const MAX_HTML_BYTES = 4200000; // ৪.৫MB সীমার নিচে
 const MAX_PDF_BYTES = 4400000;
 
@@ -31,6 +32,10 @@ module.exports = async (req, res) => {
 
   let browser = null;
   try {
+    const chromiumPkg = await import('@sparticuz/chromium');
+    const chromium = chromiumPkg.default || chromiumPkg;
+    const puppeteerPkg = await import('puppeteer-core');
+    const puppeteer = puppeteerPkg.default || puppeteerPkg;
     browser = await puppeteer.launch({
       args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
       defaultViewport: chromium.defaultViewport,
