@@ -1,17 +1,21 @@
 /**
- * BoiBanai PDF Server — সরাসরি PDF ডাউনলোডের সার্ভার (ফ্রি Render)।
+ * BoiBanai PDF Server — সরাসরি PDF ডাউনলোডের সার্ভার।
  *
  * কেন সার্ভার লাগে: ফোন/কম্পিউটার একা আসল-টেক্সট PDF বানাতে পারে না —
  * বাংলা যুক্তাক্ষর ঠিকভাবে সাজাতে পারে শুধু আসল Chrome ইঞ্জিন।
  * এই সার্ভার আসল Chrome (Puppeteer) দিয়ে বইয়ের HTML থেকে A5 PDF বানিয়ে দেয়।
  * প্রিন্ট-দিয়ে-PDF অপশনটা আলাদাভাবে অ্যাপেই থাকবে — দুইটা অপশনই থাকবে।
  *
- * চালানো: Render-এ Free Web Service হিসেবে ডেপ্লয় (Node 20)।
- *   POST /pdf  { html, filename } → application/pdf (A5, আসল টেক্সট)
- *   GET  /health → { ok: true }
+ * হোস্ট: Vercel Hobby (ফ্রি, কার্ড লাগে না) — api/pdf.js সার্ভারলেস ফাংশন।
+ * Render-এও চলবে (server.js, একই কোড) — তবে Render এখন কার্ড চায়, তাই
+ * Vercel-ই মূল হোস্ট। একই কোড, একই package.json দুই জায়গায় চলে।
+ *
+ *   POST /api/pdf  { html, filename } → application/pdf (A5, আসল টেক্সট)
+ *   GET  /api/pdf  → { ok: true }  (health)
  */
 const express = require('express');
-const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 
 const app = express();
 app.use(express.json({ limit: '25mb' }));
@@ -29,8 +33,10 @@ let browserPromise = null;
 async function getBrowser() {
   if (!browserPromise) {
     browserPromise = puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     }).catch((e) => { browserPromise = null; throw e; });
   }
   return browserPromise;
