@@ -13,8 +13,11 @@
 const MAX_HTML_BYTES = 4200000; // ৪.৫MB সীমার নিচে
 const MAX_PDF_BYTES = 4400000;
 
+const ALLOWED_ORIGINS = ['https://boibanai-app.web.app', 'https://boibanai-play.web.app']; // আসল অ্যাপ + প্লে কপি (দুটোরই সরাসরি PDF চলে)
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://boibanai-app.web.app');
+  const _origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(_origin)) res.setHeader('Access-Control-Allow-Origin', _origin);
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -56,6 +59,9 @@ module.exports = async (req, res) => {
     }
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeName)}"`);
+    // puppeteer-core 25-এ page.pdf() Uint8Array ফেরত দেয় — Express 4-এর
+    // res.send() সেটাকে JSON-এ মুড়ে পাঠায় ({"0":37,...}), তাই Buffer-এ
+    // বদলে নেওয়া বাধ্যতামূলক, নইলে ডাউনলোড করা ফাইল PDF থাকে না।
     res.send(Buffer.from(pdf));
   } catch (e) {
     console.error('PDF ভুল:', e && e.message);
